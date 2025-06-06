@@ -39,9 +39,19 @@
 
 	const textCompletionHandler = async () => {
 		const model = $models.find((model) => model.id === selectedModelId);
+		let url = `${WEBUI_BASE_URL}/api`;
+		let token = localStorage.token;
+
+		if (model?.direct && $settings?.directConnections) {
+			const directConnections = $settings?.directConnections;
+			const urlIdx = model?.urlIdx;
+
+			url = directConnections.OPENAI_API_BASE_URLS[urlIdx];
+			token = directConnections.OPENAI_API_KEYS[urlIdx];
+		}
 
 		const [res, controller] = await chatCompletion(
-			localStorage.token,
+			token,
 			{
 				model: model.id,
 				stream: true,
@@ -52,7 +62,7 @@
 					}
 				]
 			},
-			`${WEBUI_BASE_URL}/api`
+			url
 		);
 
 		if (res && res.ok) {
